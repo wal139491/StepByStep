@@ -1,0 +1,13 @@
+maven使用
+
+mvn 命令
+命令行进入
+1.D:
+2.cd \google-gson-18f1795
+3.cd gson
+进入目录下
+4. mvn compile
+生成target文件
+5. mvn package
+打包 且下载依赖的lib文件
+生成jar包

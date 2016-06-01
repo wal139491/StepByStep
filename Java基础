@@ -1,0 +1,26 @@
+Java中有哪几种基本数据类型：
+String int integer boolean 数组 集合
+
+JAVA的内存划分
+
+JAVA的内存回收机制
+
+JAVA 单例模式（几乎每个公司都问了。。。）
+
+面向对象的特征
+封装继承多态
+
+抽象类和接口有什么区别？
+
+Set、List、Map各自的特点
+set list 继承自Collection接口
+list元素有序而且可以重复 便于查找
+set集合 元素位置不固定 不可以有重复的值  插入时需要检查是否存在 
+有两种遍历方式for 或者Iterator while(Iterator.HashNext()){System.out.println(iterator.next())}
+Map是一个键值对的集合，不能拥有相同命名的key，一个key对应一个value
+
+LinkedList和ArrayList各有什么优缺点？
+ArrayList 实现了可变数组的功能，可以存放各种类型数据包括Null，可以进行快速查找 插入时较为麻烦，插入位置后每个元素需要后移
+
+TreeMap和HashMap有什么区别
+HashMap 是基于hash表的MAP

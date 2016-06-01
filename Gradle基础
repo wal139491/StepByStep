@@ -1,0 +1,22 @@
+   
+   1.
+   app文件夹下这个Module的gradle配置文件，也可以算是整个项目最主要的gradle配置文件
+
+   // 编译SDK的版本
+    compileSdkVersion 21
+    // build tools的版本
+    buildToolsVersion "21.1.1"
+
+  buildToolsVersion这个需要你本地安装该版本才行，很多人导入新的第三方库，失败的原因之一是build version的版本不对，这个可以手动更改成你本地已有的版本或者打开 SDK Manager 去下载对应版本。
+
+  2.gradle目录下有个 wrapper 文件夹，里面可以看到有两个文件，我们主要看下 gradle-wrapper.properties 这个文件的内容：
+  声明了gradle的目录与下载路径以及当前项目使用的gradle版本，这些默认的路径我们一般不会更改的，这个文件里指明的gradle版本不对也是很多导包不成功的原因之一。
+
+  3.build.gradle 指整个项目的gradle基础配置文件
+    a. 声明仓库的源：这里可以看到是指明的jcenter() ,兼容maven中心仓库，而且性能更优
+    b. android gradle plugin的版本
+
+  4.setting.gradle是全局项目配置文件  主要声明加入gradle的module
+
+  文件中的 app, extras:ShimmerAndroid 都是module，如果还有其他module都需要按照如上格式加进去。
+  例如 include ':app', ':libzxing'

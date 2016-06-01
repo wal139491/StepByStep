@@ -1,0 +1,45 @@
+Android mvp设计模式
+Mode_View-Presenter(模型、视图、表示器)
+MVC:促进应用中模型、视图、控制器之间的关注清晰分离。
+主要用来隔离UI、UI逻辑、业务逻辑、数据。
+Presenter：负责逻辑的处理
+Modle:用来提供数据
+View:用来显示
+按照View和Presenter的交互方式，把MVP分为两种类型
+1：PV(passive view)被动的View,对UI元素的操作不是有View自身控制而是Presenter控制
+2.SoC(Supervising Controller)降低Presenter的复杂度，将数据绑定和格式化这种简单的UI处理逻辑转移到View上，这些处理逻辑会体现在View实现的接口上
+由于软件复杂度增长，需求的不断变更，出现了软件架构思想，编程思想，设计模式。MVP、MVC、MVVM都是为解决图形化界面程序开发复杂性而产生的模式。
+架构是对客观不足的妥协，规范是对主观不足的妥协。
+GUI应用程序的出现导致了MVC的产生，GUI提供用户可视化界面，界面提供用户数据和信息。
+1.用户和界面交互(鼠标键盘滑动)，产生应用逻辑(application logic)：
+2.应用逻辑触发业务逻辑(business logic)使应用程序数据发生变更，自然也需要用户界面的同步变更
+为了解决程序的复杂性，职责分离思想对应用程序进行分离
+View:管理用户界面的层次
+Modle:Domain Modle应用程序的数据，modle提供数据的接口，执行相关的业务逻辑
+view如何同步modle的变更 view和modle如何粘在一起，MVX是对这个问题的不同处理方式
+
+为什么使用MVP
+1.尽量简单
+data->presenter->view
+任务分的更小更好测试，view层次变得简单
+2.后台任务
+优点：
+1. 降低耦合度，实现了Model和View真正的完全分离，可以修改View而不影响Modle
+2. 模块职责划分明显，层次清晰
+3. 隐藏数据
+4. Presenter可以复用，一个Presenter可以用于多个View，而不需要更改Presenter的逻辑（当然是在View的改动不影响业务逻辑的前提下）
+5. 利于测试驱动开发。Presenter应用逻辑的正确性。
+6. View可以进行组件化。
+7. 代码灵活性
+
+
+MVP模式通常包含4个元素
+1.view:负责绘画UI元素，与用户进行交互(Activity,Fragment)
+2.view interface:需要View实现的接口，View通过View Interface与presenter交互，降低耦合方便单元测试
+modle:负责存储、检索、操纵数据（有时候也有Modle interface来降低耦合）
+Presenter：作为View和Modle交互的中间纽带，处理与用户交互的逻辑
+Soc下MVP与MVC十分相似
+PV下：modle与view不会直接通信，presenter是中间人(也就是说mvp下modle和view没有直接联系)
+而MVC模式 collector更新modle,会直接通知view并更新显示
+
+

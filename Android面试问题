@@ -1,0 +1,244 @@
+1. Android线程安全
+Android一般情况下会使用一个主线程控制UI，非主线程无法控制UI，Android4.0以后在主线程中进行网络操作，所有的网络操作在独立的线程中异步运行
+
+2. android使用返回栈来控制活动
+每个活动生命周期内有四个活动状态，运行状态（栈顶就是运行 可见状态），暂停状态（不位于栈顶，但任然可见），停止状态（不栈顶，完全不可见），销毁状态（从返回栈中移除）
+
+Activity定义了7个回调方法，覆盖活动生命周期的每一个环节
+onCreate() 初始化布局，绑定事件
+onStart() 活动由不可见变为可见时候调用
+onResume()  活动准备交互时候调用
+onPause()  活动启动或调用另一个活动时（对话框活动启动）
+onStop()  活动完全不可见
+onDestory() 活动销毁前调用
+onRestart() 活动由停止变为运行
+完整生命周期 onCreate()---onDestory()
+可见生命周期 onStart()---onStop()  可能无法交互
+前台生命周期 onResume()---onPause()  可交互 运行状态
+
+
+Activity四种启动模式
+1.standard 默认进入Activity所属返回栈中 不管是否存在于返回栈中，每次启动都创建一个新的实例
+2.singleTop 栈顶复用模式 如果位于栈顶不创建新的实例(Activity不会被重新创建)
+3.singleTask 栈内复用模式 解决重复创建栈顶，如果返回栈中有就直接使用，这个活动之上的活动全部出栈
+没有就创建一个新的实例
+4.singleInstance 单实例模式 在manifiest的<activity>里设置android:launchMode="singleInstance"
+这样创建单独的返回栈来管理此活动，可以允许其他程序调用
+注意：默认情况下，所有activity所需的任务栈的名字为应用的包名，可以通过给activity指定TaskAffinity属性来指定任务栈，这个属性值不能和包名相同，否则就没有意义 。
+
+随时随地退出活动
+public class ActivityCollector{
+ //指定泛型
+  public static List<Activity> activities=new ArrayList<Activity>();
+  	public static void addActivity(){
+      activities.add(activity);
+	}
+  public static void removeActivity(){
+    activities.remove(activity);
+  }
+  public static void removeAll(){
+   for(Activity activity:activities){
+     if(!activity.isFinishing()){
+     activity.finish();
+     }
+   }
+  }
+}
+
+//List暂存活动，removeAll()将活动全部销毁掉
+
+使用在onCreate(){
+	ActivityCollector.addActivity(this);
+}
+在protected void onDestory(){
+	ActivityCollector.removeActivity(this);
+}
+switch(v.getId()){
+	case R.id.button:
+	ActivityCollector.removeAll();
+    break;
+    default:
+    break;
+}
+
+
+Service的生命周期 （bind和start的区别）  Service是专门在后台处理长时间耗时任务的Android组件，没有UI，有两种启动方式
+startService 只是startService，启动serivce的组件（如Activity）与Service并没有关联，只要调用service的stopSelf或者组件调用StopService才会停止服务
+生命周期
+onCreate()->onStartComand()->service is running->onDestory()
+bindService方法创建Service，其他组件通过回调Service代理对象与Service交互，两者也进行绑定，启动方被销毁时service自动调用unBind方法解除绑定，当所有绑定被解除时，Service才被销毁
+
+Service的onCreate是在主线程中调用的，不能进行耗时操作会阻塞UI线程
+
+Service 使用时一定要注册 Android的四大组件都需要注册（Activity Service BroadCastReceive广播  ContentProvider内容提供器 ）
+
+是否知道IntentService，在什么场景下使用IntentService？
+
+
+Service应用场景：如果一个应用要从网络上下载MP3文件，并在Activity上展示进度条，这个Activity要求是可以转屏的。那么在转屏时Actvitiy会重启，如何保证下载的进度条能正确展示进度呢？
+解决：通过Service，不过涉及到Service与Activity交互
+
+适合执行那些不需要和用户交互而且还要长时间执行的任务，服务默认运行于主线程，需要手动创建子线程执行具体的任务，否则出现主线程被阻塞
+
+要针对实际场景具体分析是否使用Service，因为Service也是在主线程中调用，还是要开线程才能处理长时间操作，Service与UI交互也不简单，如果只是进行一些耗时操作而且在界面退出改变时，工作也停止，这样直接使用Thread,Asynctask,ThreadHandler更加简单
+
+
+
+
+
+碎片生命周期和回调
+生命周期的四个状态：运行状态，暂停状态，停止状态，销毁状态
+运行状态：碎片可见而且与它关联的活动也处于运行状态
+暂停状态：活动进入暂停状态（比如一个未占满屏幕的活动被添加到栈顶），与它相关联的可见碎片也进入暂停状态
+停止状态：当相关联的活动进入停止状态，或者通过调用FragmentTransaction的remove(),replace(),将碎片从活动中移除，停止状态的碎片完全不可见可能被系统回收
+销毁状态：相关联的活动呗销毁，或者调用FragmentTrasaction的remove(),replace(),将碎片从活动中移除，或者事务提交之前调用addToBackStack()方法，碎片都会进入停止状态
+
+Fragemnt定义了一系列回调方法覆盖碎片生命周期的每一个环节
+除了活动中的回调方法，Fragment还有附加的回调方法
+1.onAttach()
+在碎片和活动建立关联的时候调用
+2.onCreateView()
+为碎片加载布局时候调用
+3.onActivityCreated()
+与碎片相关联的活动创建完毕时候调用
+4.onDestoryView()
+与碎片相关联的视图被移除时候调用
+5.onDetech()
+当碎片与活动解除关联时候调用
+onAttach()->onCreate()->onCreateView()->onActivityCreated()->onStart()->onResume()->
+碎片已经激活->(用户点击返回键，或者碎片被移除/替换，或者碎片被添加到返回栈)->onPause()->onStop()->onDestoryView()(从返回栈中回到上一个碎片)->onDestory()->onDetech->碎片被销毁
+
+Fragment和Activity生命周期的关系
+创建过程
+F onAttach()
+F onCreate()
+F onCreateView()
+A onCrete()
+F onActivityCreated()
+A onStart()
+F onStart()
+A onResume()
+F onResume()
+销毁过程
+F onPause()
+A onPause()
+F onStop()
+A onStop()
+F onDestroyView()
+F onDestory()
+F onDetach()
+A onDestory()
+
+Activity 与meun创建顺序
+在Activity回调onResume()后创建menu,再调用onCreateOptionMenu()
+
+重要
+面试官要看的点，真正的项目需要一个开发人员对某个问题有一定的深度，也需要对整个Android的知识点有一定的广度。深度代表这个人对问题认真对待有钻研的精神，广度代表这个人在面对同一个问题时，会更容易从多种可行的方案中选出最合适的一种。
+
+AIDL(Android Interface Defination Language)  Android进程间通信(IPC) 也就是两个应用程序间通信
+
+
+
+
+AsyncTask(原理也是基于异步消息处理机制) Android做了很好的封装
+AsyncTask是一个抽象类，需要创建一个子类去继承他，需要指定三个泛型参数
+1.params 执行AsyncTask需要传入的参数，可以在后台任务中使用
+2.Process 后台执行任务，需要在界面上显示当前进度，把该 泛型 作为进度单位
+3.Result 任务执行完毕，指定泛型作为返回值
+class DownloanTask extends AsyncTask<Void, Integer, Boolean>
+
+需要重写四个方法
+1.onPreExecute()
+任务执行之前调用，进行一些初始化操作，比如显示一条进度条对话框
+2.doInBackground(Params...)
+所有代码都在子线程中运行，在这里处理一些耗时操作，通过return将任务执行结果返回，
+如果第三个泛型参数为Void不用返回结果
+注意：不能更新UI，如果需要调用publish(Progress...)方法来完成
+3.onProgressUpdate(Progress...)   OP
+如果后台调用publishProgress()方法，就会执行该方法，通过后台传入的值更新UI
+4.onPostExecute(Result)
+当后台执行任务结束，并通过return 语句返回时调用，返回的数据作为参数，可以进行一些UI操作比如提醒任务执行结果、关闭掉进度条等
+
+
+内存泄露(内存溢出)和OOM(Out of Memory 内存溢出)
+1.Android(Java)中常见的容易引起内存泄漏的不良代码
+Android应用于嵌入式设备，由于内存和配置的限制，如果代码有太多的对内存使用不当的地方，会照成设备运行缓慢或者死机。为了使应用程序安全且快速的运行，Android 的每个应用程序都会使用一个专有的Dalvik虚拟机实例来运行，也就是说每个应用程序都是在属于自己的进程中运行的。一方面，如果程序在运行过程中出现了内存泄漏的问题，仅仅会使得自己的进程被kill掉，而不会影响其他进程（如果是system_process 等系统进程出问题的话，则会引起系统重启）。另一方面Android为不同类型的进程分配了不同的内存使用上限，如果应用进程使用的内存超过了这个上限，则会被系统视为内存泄漏，从而被kill掉。
+2. 内存不够用就叫oom.
+     Android设备内存一般比较小，容易引起oom.
+     Android每个应用程序在专有的Dalvik虚拟机实例中运行，Android分配固定内存。超出分配的内存，引起oom,系统KILL掉，程序结束。
+     Android系统进程OOM,机器重启。
+出现oom，无非主要是以下几个方面：
+　　一、加载对象过大
+　　二、相应资源过多，没有来不及释放。
+　　解决这样的问题，也有一下几个方面：
+　　一：在内存引用上做些处理，常用的有软引用、强化引用、弱引用
+　　二：在内存中加载图片时直接在内存中做处理，如：边界压缩.
+　　三：动态回收内存
+　　四：优化Dalvik虚拟机的堆内存分配
+　　五：自定义堆内存大小
+
+
+SQLite 使用  SQL(Structured Query Language)
+SQLite提供了一个SQLiteOpenHelper来操作数据库，新建一个子类继承
+重写构造方法有四个参数 context,name,factory(查询数据返回自定义的Cursor一般为null),version
+在重写onCrete() onUpdate()方法(如果数据库表中存在表，需要使用更新)
+
+构建完SQLiteOpenHelper实例以后，调用getReadableDatabase()和getWritableDataBase()方法就会创建数据库  文件位置/data/data/package name/databases/目录下
+
+数据库的操作 CURD()
+getReadableDatabase()返回一个SQLiteDatabase对象，借助这个对象就可以进行CURD操作
+
+insert()插入数据 三个参数 1.表名2.未指定数值赋值为null(null)3. ContentValues对象
+提供了一系列方法向列中添加数据
+ContentValues values=new ContentValues();
+values.put("name","book");
+values.put("pages",456);
+db.insert("Book",null,values);
+
+update() 更新数据 4个参数 1.表名 2. ContentValues 3.4.约定某一行或某几行(不指定更新所有行)
+values.put("price",10.99);
+db.update("Book",values,"name=?",new String[] {"My Real Story"});
+第三个参数相当于where语句 where bookname="My Real Story"
+
+delete() 删除数据 三个参数1.表名 2.3.约定某一行或某几行(不指定删除所有行数据)
+
+db.delete("Book","page>?",new String[]{"500"})
+
+query() 7/8个参数 1.表名 2.约定查询那几列(没有就所有列)3.4.参数约定那几行
+5.指定groupby的列 6.group by 后进一步过滤7.设置排序方式
+
+Cursor cursor=db.query("Book",null,null,null,null,null,null);
+if(cursor.moveToFirst){//移动到第一行
+  do{
+ String name=cursor.getString(cursor.getColumnIdex("name"));//获取某一列的索引位置，再读取数据
+ int page=cursor.getInt(sursor.getColumnIndex("pages"));
+  }
+ cursor.close();
+}
+
+
+Android-universal-Image-Loader
+实现了异步的网络图片加载，并且支持多线程异步加载
+
+Fresco内存管理
+Image Pipeline:从网络或者本地文件加载图片(设计三级缓存，2级内存，1级文件，最大节省内存和CPU)
+Drawees模块:方便显示loadding图，图片不显示时及时释放内存
+解压后的图片既Bitmap,占用大量的内存，大内存引发频繁的GC，Android5.0以下会造成卡顿，
+Fresco将图片放到特殊的内存区域，图片不显示时内存自动释放，使APP运行更加流畅，减少因图片内存占用引发的OOM
+Fresco会显示渐进式图片，就是显示图片的大致轮廓，随着图片的下载逐渐清晰(只需要提供URI)
+支持加载gif,自定义居中，圆角图，加载失败点击重新加载，自定义占位图，自定义按压的占位图
+从远端加载或者从缓存中读取，加载完成回调通知，缩放或旋转图片。
+1)
+在setContentView前，进行初始化
+Fresco.initialize(context);
+2)layOut中加入simpleDraweeView
+<com.facebook.drawee.view.SimpleDraweeView
+    android:id="@+id/my_image_view"
+    android:layout_width="20dp"
+    android:layout_height="20dp"
+    fresco:placeholderImage="@drawable/my_drawable"
+  />
+3)加载图片
+Uri uri=Uri.prase("http://");
+SimpleDraweeView darwview=()findViewById();
+drawview.setImageView(uri)

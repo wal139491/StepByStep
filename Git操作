@@ -1,0 +1,99 @@
+diyici shiyong git minglinghang
+初始化仓库
+git init
+
+添加忽略文件
+touch .gitignore
+将代码提交进去
+git add .
+执行提交操作 
+git commit -m "shuru"
+
+git status
+
+git diff 
+
+git diff shuoming.text
+
+撤销未提交的修改 只适用于没有执行add的
+git checkout ni.txt
+
+执行add命令后 取消操作
+git reset HEAD  shuoming.text
+
+查看提交记录
+git log
+
+查看一条具体记录的详细信息
+git log fae27ea6637c4f08a6f8f20030b2bf5d8f53109a -1 -p
+
+查看分支
+git branch -a
+
+新建分支
+git branch version1.0
+
+撤销分支
+git checkout version1.0
+
+合并操作
+git checkout master
+git merge version1.0(将version合并到master)
+
+删除分支
+git branch -D version1.0
+
+下载仓库代码
+git clone http://github.com/example/test.git
+
+本地修改内容同步到远程仓库
+git push origin master (origin指远程版本库的Git地址，master指同步到哪一个分支)
+
+远程版本库的修改同步到本地
+
+1.同步的代码不在任何分支 放在origin/master分支
+git fetch origin master
+
+查看远程版本库修改了什么
+git diff origin/master
+
+将origin/master分支上的修改合并到主分支上
+git merge origin/master
+
+2.pull命令将 fetch和merge一起执行 远程版本库获取最新并合并到本地
+git pull origin master
+
+
+Github是免费的代码托管网站，主要借助Git进行版本控制
+
+
+
+在GitBash中先复制到txt在复制到command中 否则会出错
+git clone https://github.com/wal139491/Meeting_Register.git
+
+目录查看所有文件
+ls -al
+
+
+1.cd g: 
+2.cd Whyme
+cp -af Meeting_Register ../
+
+Windows下开发.不是隐藏目录，直接文件夹复制就好了，Linux下开发的话用cp命令可以复制隐藏目录的，或者你可以把隐藏目录显示出来，然后复制文件夹。
+
+最后还是显示隐藏目录解决
+
+
+最后发布提交
+1.git commit -m "First commit"
+2.git push origin master
+3.输入账户 965669106@qq.com
+  密码wal139491007
+
+cd ../返回上一层
+
+
+ll -a  查看隐藏文件
+cp .gitignore ../电影   复制到上一层电影
+cp * ../电影
+
